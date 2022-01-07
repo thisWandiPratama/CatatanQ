@@ -8,7 +8,9 @@ class Home extends Component {
         };
     }
 
+
     render() {
+        const { title, deskripsi } = this.props.route.params;
         return (
             <View
                 style={styles.container}
@@ -50,7 +52,7 @@ class Home extends Component {
                                 fontSize: 20,
                                 color:'#000'
                             }}
-                            >Kegiatan 1</Text>
+                            >{title}</Text>
                             <View style={{
                                 marginTop: 50,
                                 height: 199,
@@ -60,7 +62,7 @@ class Home extends Component {
                                 borderRadius: 10,
                                 padding: 10
                             }}>
-                                <Text>Deskripsi kegiatan ada disini</Text>
+                                <Text>{deskripsi}</Text>
                             </View>
                         </View>
                     </View>

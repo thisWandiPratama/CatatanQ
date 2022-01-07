@@ -1,12 +1,43 @@
 import React, { Component } from 'react';
 import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 class Profile extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            token : "",
+            nama:"",
+            email:""
         };
     }
+
+    getToken = async () => {
+        try {
+            const token = await AsyncStorage.getItem('@tokenlogin')
+            const nama = await AsyncStorage.getItem('@namalogin')
+            const email = await AsyncStorage.getItem('@emaillogin')
+            if (token !== null &&nama !== null&&email !== null) {
+                // console.log(jsonValue.name)
+                this.setState({ token: JSON.parse(token),nama:JSON.parse(nama),email:JSON.parse(email) })
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    componentDidMount() {
+        this.getToken()
+    }
+
+
+    Logout = () => {
+        AsyncStorage.clear()
+        this.props.navigation.replace("masuk")
+    }
+
+
 
     render() {
         return (
@@ -39,7 +70,7 @@ class Profile extends Component {
                             color: "#000",
                             fontWeight: 'bold',
                             fontSize: 18
-                        }} >Nama Pengguna</Text>
+                        }} >{this.state.nama}</Text>
                     </View>
                     <View
                         style={styles.boxInput}
@@ -54,9 +85,9 @@ class Profile extends Component {
                             color: "#000",
                             fontWeight: 'bold',
                             fontSize: 18
-                        }} >Email</Text>
+                        }} >{this.state.email}</Text>
                     </View>
-                    <TouchableOpacity
+                    <TouchableOpacity onPress={() => this.Logout()}
                         style={{
                             height: 60,
                             width: "60%",

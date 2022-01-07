@@ -6,11 +6,34 @@ import {
   StyleSheet
 } from 'react-native'
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
+
 class TampilanAwal extends React.Component {
 
-  componentDidMount(){
+
+
+  getToken = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem('@tokenlogin')
+      jsonValue != null ? JSON.parse(jsonValue) : null;
+      if (jsonValue !== null) {
+        console.log(jsonValue)
+        this.props.navigation.replace("home")
+      } else {
+        this.props.navigation.replace("masuk")
+      }
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+
+
+  componentDidMount() {
     setTimeout(() => {
-      this.props.navigation.replace("masuk")
+      this.getToken()
     }, 2000);
   }
 
@@ -50,7 +73,7 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: -1, height: 1 },
     textShadowRadius: 10,
-    fontStyle:'italic'
+    fontStyle: 'italic'
 
   }
 })
