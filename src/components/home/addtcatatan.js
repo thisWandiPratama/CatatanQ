@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
@@ -9,7 +9,8 @@ class AddCatatan extends Component {
         this.state = {
             token: "",
             judul: "",
-            deskripsi: ""
+            deskripsi: "",
+            isLoading: false
         };
     }
 
@@ -29,8 +30,20 @@ class AddCatatan extends Component {
     }
 
 
+    goBackToHome = () => {
+        this.props.navigation.goBack()
+        this.props.route.params.autoRefresh();
+    }
+
+
     AddCatatan = () => {
+        this.setState({ isLoading: true })
         const { token, judul, deskripsi } = this.state
+
+        if(judul.length==0||deskripsi.length==0){
+            alert("Tidak Ada Data Boleh Kosong!!")
+            this.setState({ isLoading: false })
+        }
 
         fetch("https://golang-api-kegiatanq.herokuapp.com/api/v1/kegiatan/", {
             method: 'POST',
@@ -49,10 +62,14 @@ class AddCatatan extends Component {
                 console.log(result)
                 if (result.status === true) {
                     alert("Add Data Sukses!!")
-                    this.props.navigation.goBack()
+                    this.setState({ isLoading: true })
+                   this.goBackToHome()
                 }
             })
-            .catch(error => console.log('error', error));
+            .catch(error => {
+                this.setState({ isLoading: true })
+                console.log('error', error)
+            });
 
     }
 
@@ -97,24 +114,30 @@ class AddCatatan extends Component {
                         alignItems: 'center',
                         marginTop: 40
                     }}>
-                        <TouchableOpacity onPress={() => this.AddCatatan()}
-                            style={{
-                                height: 50,
-                                width: "60%",
-                                backgroundColor: "#F55F44",
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                borderRadius: 5
-                            }}
-                        >
-                            <Text
+
+                        {this.state.isLoading === true ?
+
+                            <ActivityIndicator size={"large"} color="red" />
+                            :
+                            <TouchableOpacity onPress={() => this.AddCatatan()}
                                 style={{
-                                    color: "#fff",
-                                    fontSize: 24,
-                                    fontWeight: 'bold'
+                                    height: 50,
+                                    width: "60%",
+                                    backgroundColor: "#F55F44",
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: 5
                                 }}
-                            >Tambah</Text>
-                        </TouchableOpacity>
+                            >
+                                <Text
+                                    style={{
+                                        color: "#fff",
+                                        fontSize: 24,
+                                        fontWeight: 'bold'
+                                    }}
+                                >Tambah</Text>
+                            </TouchableOpacity>
+                        }
                     </View>
                 </View>
             </View>

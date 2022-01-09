@@ -1,15 +1,18 @@
 import React, { Component } from 'react';
 import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Geolocation from '@react-native-community/geolocation';
 
 
 class Profile extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            token : "",
-            nama:"",
-            email:""
+            token: "",
+            nama: "",
+            email: "",
+            latitude: "",
+            longitude: ""
         };
     }
 
@@ -18,9 +21,9 @@ class Profile extends Component {
             const token = await AsyncStorage.getItem('@tokenlogin')
             const nama = await AsyncStorage.getItem('@namalogin')
             const email = await AsyncStorage.getItem('@emaillogin')
-            if (token !== null &&nama !== null&&email !== null) {
+            if (token !== null && nama !== null && email !== null) {
                 // console.log(jsonValue.name)
-                this.setState({ token: JSON.parse(token),nama:JSON.parse(nama),email:JSON.parse(email) })
+                this.setState({ token: JSON.parse(token), nama: JSON.parse(nama), email: JSON.parse(email) })
             }
         } catch (e) {
             console.log(e)
@@ -29,6 +32,18 @@ class Profile extends Component {
 
     componentDidMount() {
         this.getToken()
+        this.getLocation()
+    }
+    
+    
+    getLocation = () => {
+        Geolocation.getCurrentPosition(info => { this.setState({ latitude: info.coords.latitude, longitude: info.coords.longitude }) });
+        // setTimeout(() => {
+        //     let key = 'AIzaSyC7MU_zDS2NQddIpBlxGWavGOQGR8s0eaM'
+        //     fetch(`https://maps.googleapis.com/maps/api/geocode/json?key=${key}&latlng=${this.state.latitude},${this.state.longitude}`)
+        //     .then(res => res.json())
+        //     .then(res => console.log(res))
+        // }, 2000);
     }
 
 
@@ -86,6 +101,21 @@ class Profile extends Component {
                             fontWeight: 'bold',
                             fontSize: 18
                         }} >{this.state.email}</Text>
+                    </View>
+                    <View
+                        style={styles.boxInput}
+                    >
+                        <Image
+                            source={{
+                                uri: 'https://i.ibb.co/jG6x2qZ/placeholder.png'
+                            }}
+                            style={styles.emailLogo}
+                        />
+                        <Text style={{
+                            color: "#000",
+                            fontWeight: 'bold',
+                            fontSize: 18
+                        }} >{this.state.latitude}, {this.state.longitude}</Text>
                     </View>
                     <TouchableOpacity onPress={() => this.Logout()}
                         style={{

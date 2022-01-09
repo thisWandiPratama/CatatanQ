@@ -6,7 +6,8 @@ import {
     TextInput,
     TouchableOpacity,
     StyleSheet,
-    Touchable
+    ScrollView,
+    ActivityIndicator
 } from 'react-native'
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,113 +17,135 @@ class Masuk extends React.Component {
         super(props)
         this.state = {
             email: "",
-            password: ""
+            password: "",
+            isLoading: false
         }
     }
 
     Login = () => {
-        const {  email, password } = this.state
+        this.setState({ isLoading: true })
+        const { email, password } = this.state
 
-        fetch("https://golang-api-kegiatanq.herokuapp.com/api/v1/auth/login", {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                email: email,
-                password: password,
-            }),
-        })
-            .then(response => response.json())
-            .then(result => {    
-                console.log(result)
-                if(result.status===true){
-                    AsyncStorage.setItem('@tokenlogin', JSON.stringify(result.data.token))
-                    AsyncStorage.setItem('@namalogin', JSON.stringify(result.data.name))
-                    AsyncStorage.setItem('@emaillogin', JSON.stringify(result.data.email))
-                    alert("Login Sukses!!")
-                    this.props.navigation.replace("home")
-                }else{
-                    alert("Email atau Password Salah!")
-                }
+        if (email.length == 0, password.length == 0) {
+            setTimeout(() => {
+                this.setState({ isLoading: false })
+                alert("Semua data wajib diisi")
+            }, 2000);
+        } else {
+
+
+            fetch("https://golang-api-kegiatanq.herokuapp.com/api/v1/auth/login", {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password,
+                }),
             })
-            .catch(error => console.log('error', error));
-
+                .then(response => response.json())
+                .then(result => {
+                    console.log(result)
+                    if (result.status === true) {
+                        AsyncStorage.setItem('@tokenlogin', JSON.stringify(result.data.token))
+                        AsyncStorage.setItem('@namalogin', JSON.stringify(result.data.name))
+                        AsyncStorage.setItem('@emaillogin', JSON.stringify(result.data.email))
+                        this.setState({ isLoading: false })
+                        alert("Login Sukses!!")
+                        this.props.navigation.replace("home")
+                    } else {
+                        this.setState({ isLoading: false })
+                        alert("Email atau Password Salah!")
+                    }
+                })
+                .catch(error => {
+                    this.setState({ isLoading: false })
+                    console.log('error', error)
+                });
+        }
     }
     render() {
         return (
             <View
                 style={styles.container}
             >
-                <View
-                    style={
-                        styles.boxLogoMasuk
-                    }
-                >
-                    <Image
-                        source={{
-                            uri: 'https://i.ibb.co/8Ddf831/kisspng-vector-graphics-royalty-free-pencil-cartoon-5c0ca74a56dd02-1.png'
-                        }}
-                        style={styles.logoMasuk}
-                    />
-                </View>
-                <Text
-                    style={styles.title}
-                >KegiatanQ</Text>
-
-                <View
-                    style={styles.mainContent}
-                >
+                <ScrollView>
                     <View
-                        style={styles.boxInput}
+                        style={
+                            styles.boxLogoMasuk
+                        }
                     >
                         <Image
                             source={{
-                                uri: 'https://i.ibb.co/FBfDZTG/EMAIL-LOGO-removebg-preview-2.png'
+                                uri: 'https://i.ibb.co/8Ddf831/kisspng-vector-graphics-royalty-free-pencil-cartoon-5c0ca74a56dd02-1.png'
                             }}
-                            style={styles.emailLogo}
-                        />
-                        <TextInput
-                            placeholder="Email ID"
-                            onChangeText={(email) => this.setState({email:email})}
+                            style={styles.logoMasuk}
                         />
                     </View>
-                    <View
-                        style={styles.boxInput}
-                    >
-                        <Image
-                            source={{
-                                uri: 'https://i.ibb.co/ypZNWb5/247-2474005-png-file-svg-icon-login-password-clipart-1-1.png'
-                            }}
-                            style={styles.emailLogo}
-                        />
-                        <TextInput
-                            placeholder="Kata Sandi"
-                            onChangeText={(password) => this.setState({password:password})}
-                        />
-                    </View>
-                </View>
+                    <Text
+                        style={styles.title}
+                    >KegiatanQ</Text>
 
-                <View style={styles.boxBtnMasuk}>
-                    <TouchableOpacity onPress={() => this.Login()}
-                        style={styles.btnMasuk}
+                    <View
+                        style={styles.mainContent}
                     >
-                        <Text style={styles.titleBtn} >Masuk</Text>
-                    </TouchableOpacity>
-                    <View style={styles.boxQuiz} >
-                        <Text style={{
-                            color: 'black',
-                            paddingRight: 10
-                        }} >Belum memiliki akun ?</Text>
-                        <Text
-                            onPress={() => this.props.navigation.navigate("daftar")}
-                            style={{
-                                color: '#F55F44',
-                            }}
-                        >DAFTAR</Text>
+                        <View
+                            style={styles.boxInput}
+                        >
+                            <Image
+                                source={{
+                                    uri: 'https://i.ibb.co/FBfDZTG/EMAIL-LOGO-removebg-preview-2.png'
+                                }}
+                                style={styles.emailLogo}
+                            />
+                            <TextInput
+                                placeholder="Email ID"
+                                onChangeText={(email) => this.setState({ email: email })}
+                            />
+                        </View>
+                        <View
+                            style={styles.boxInput}
+                        >
+                            <Image
+                                source={{
+                                    uri: 'https://i.ibb.co/ypZNWb5/247-2474005-png-file-svg-icon-login-password-clipart-1-1.png'
+                                }}
+                                style={styles.emailLogo}
+                            />
+                            <TextInput
+                                placeholder="Kata Sandi"
+                                onChangeText={(password) => this.setState({ password: password })}
+                                secureTextEntry={true}
+                            />
+                        </View>
                     </View>
-                </View>
+
+                    <View style={styles.boxBtnMasuk}>
+                        {this.state.isLoading === true ?
+                            <ActivityIndicator size={"large"} color="red" />
+                            :
+                            <TouchableOpacity onPress={() => this.Login()}
+                                style={styles.btnMasuk}
+                            >
+                                <Text style={styles.titleBtn} >Masuk</Text>
+                            </TouchableOpacity>
+                        }
+                        <View style={styles.boxQuiz} >
+                            <Text style={{
+                                color: 'black',
+                                paddingRight: 10
+                            }} >Belum memiliki akun ?</Text>
+                            <Text
+                                onPress={() => this.props.navigation.navigate("daftar")}
+                                style={{
+                                    color: '#F55F44',
+                                }}
+                            >DAFTAR</Text>
+                        </View>
+                    </View>
+                </ScrollView>
             </View>
         )
     }

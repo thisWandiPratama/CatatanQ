@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -9,7 +9,10 @@ class Home extends Component {
         super(props);
         this.state = {
             token: "",
-            data: []
+            data: [],
+            isLoading: true,
+            isLoadingFinish: false,
+            isLoadingAutoRefresh: false
         };
     }
 
@@ -36,6 +39,7 @@ class Home extends Component {
 
     getListData = () => {
         const { token } = this.state
+        this.setState({ isLoadingAutoRefresh: true })
         fetch("https://golang-api-kegiatanq.herokuapp.com/api/v1/kegiatan/", {
             method: 'GET',
             headers: {
@@ -47,12 +51,16 @@ class Home extends Component {
             .then(response => response.json())
             .then(result => {
                 console.log(result)
-                this.setState({ data: result.data })
+                this.setState({ data: result.data, isLoading: false, isLoadingFinish: false, isLoadingAutoRefresh: false })
             })
-            .catch(error => console.log('error', error));
+            .catch(error => {
+                this.setState({ isLoading: false, isLoadingAutoRefresh: false, isLoadingFinish: false })
+                console.log('error', error)
+            });
     }
 
     finish = (id) => {
+        this.setState({ isLoadingFinish: true })
         const { token } = this.state
         fetch(`https://golang-api-kegiatanq.herokuapp.com/api/v1/kegiatan/finish/${id}`, {
             method: 'PUT',
@@ -71,10 +79,14 @@ class Home extends Component {
                 console.log(result)
                 this.getListData()
             })
-            .catch(error => console.log('error', error));
+            .catch(error => {
+                this.setState({ isLoadingFinish: true })
+                console.log('error', error)
+            });
     }
 
     Delete = (id) => {
+        this.setState({ isLoadingFinish: true })
         const { token } = this.state
         fetch(`https://golang-api-kegiatanq.herokuapp.com/api/v1/kegiatan/${id}`, {
             method: 'DELETE',
@@ -89,23 +101,24 @@ class Home extends Component {
                 console.log(result)
                 this.getListData()
             })
-            .catch(error => console.log('error', error));
+            .catch(error => {
+                this.setState({ isLoadingFinish: true })
+                console.log('error', error)
+            });
     }
-
-
 
 
     renderListData = () => {
         return this.state.data.map((value, index) => {
             return (
-                <View style={{
+                <View key={index} style={{
                     height: 45,
                     width: "100%",
                     backgroundColor: "#C4C4C4",
                     flexDirection: 'row',
                     marginBottom: 5
                 }}>
-                    <TouchableOpacity onPress={() => this.props.navigation.navigate("detail", {title:value.title, deskripsi:value.deskripsi})}
+                    <TouchableOpacity onPress={() => this.props.navigation.navigate("detail", { title: value.title, deskripsi: value.deskripsi })}
                         style={{
                             justifyContent: 'center',
                             height: 45,
@@ -171,6 +184,13 @@ class Home extends Component {
     }
 
 
+    autoRefresh = () => {
+        this.getListData()
+        console.log("auto refresh setelah goback dari add catatan")
+    }
+
+
+
     render() {
         return (
             <View
@@ -187,12 +207,23 @@ class Home extends Component {
                     />
                 </TouchableOpacity>
 
+
+
                 {this.state.data.length == 0 ?
 
-                    <Image
-                        source={{ uri: "https://i.ibb.co/56H2LGH/images-1.png" }}
-                        style={styles.note}
-                    />
+                    <View>
+                        {this.state.isLoading === true ?
+
+                            <ActivityIndicator size={"large"} color="red" />
+
+                            :
+                            null
+                        }
+                        <Image
+                            source={{ uri: "https://i.ibb.co/56H2LGH/images-1.png" }}
+                            style={styles.note}
+                        />
+                    </View>
                     :
                     <View style={{
                         position: 'absolute',
@@ -207,11 +238,17 @@ class Home extends Component {
                             flex: 1
                         }}>
                             {this.renderListData()}
+                            {this.state.isLoadingFinish === true ?
 
+                                    <ActivityIndicator size={"large"} color="red" />
+
+                                :
+                                null
+                            }
                         </View>
                     </View>
                 }
-                <TouchableOpacity style={styles.boxAdd} onPress={() => this.props.navigation.navigate("addcatatan")} >
+                <TouchableOpacity style={styles.boxAdd} onPress={() => this.props.navigation.navigate("addcatatan", { autoRefresh: this.autoRefresh })} >
                     <Text style={styles.titleAdd}>+</Text>
                 </TouchableOpacity>
             </View>

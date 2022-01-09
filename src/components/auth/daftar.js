@@ -6,7 +6,8 @@ import {
     TextInput,
     TouchableOpacity,
     StyleSheet,
-    Touchable
+    ActivityIndicator,
+    ScrollView
 } from 'react-native'
 
 class Daftar extends React.Component {
@@ -15,35 +16,54 @@ class Daftar extends React.Component {
         this.state = {
             nama: "",
             email: "",
-            password: ""
+            password: "",
+            isLoading: false
         }
     }
 
     Daftar = () => {
+        this.setState({ isLoading: true })
+
         const { nama, email, password } = this.state
 
-        fetch("https://golang-api-kegiatanq.herokuapp.com/api/v1/auth/register", {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                name: nama,
-                email: email,
-                password: password,
-            }),
-        })
-            .then(response => response.json())
-            .then(result => {    
-                console.log(result)
-                if(result.status===true){
-                    alert("Daftar Sukses!!")
-                    this.props.navigation.goBack()
-                }
-            })
-            .catch(error => console.log('error', error));
+        if (nama.length == 0 || email.length == 0, password.length == 0) {
+            setTimeout(() => {
+                this.setState({ isLoading: false })
+                alert("Semua data wajib diisi")
+            }, 2000);
+        } else {
 
+
+            fetch("https://golang-api-kegiatanq.herokuapp.com/api/v1/auth/register", {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: nama,
+                    email: email,
+                    password: password,
+                }),
+            })
+                .then(response => response.json())
+                .then(result => {
+                    console.log(result)
+                    if (result.status === true) {
+                        this.setState({ isLoading: false })
+                        alert("Daftar Sukses!!")
+                        this.props.navigation.goBack()
+                    }else{
+                        this.setState({ isLoading: false })
+                        alert("Gagal Register, Kemungkinan Email Sudah Ada!")
+                    }
+                })
+                .catch(error => {
+                    this.setState({ isLoading: false })
+                    console.log('error', error)
+
+                });
+        }
     }
 
 
@@ -52,103 +72,111 @@ class Daftar extends React.Component {
             <View
                 style={styles.container}
             >
-                <View
-                    style={
-                        styles.boxLogoMasuk
-                    }
-                >
-                    <Image
-                        source={{
-                            uri: 'https://i.ibb.co/8Ddf831/kisspng-vector-graphics-royalty-free-pencil-cartoon-5c0ca74a56dd02-1.png'
-                        }}
-                        style={styles.logoMasuk}
-                    />
-                </View>
-                <Text
-                    style={styles.title}
-                >KegiatanQ</Text>
+                <ScrollView>
 
-                <View
-                    style={styles.mainContent}
-                >
                     <View
-                        style={styles.boxInput}
+                        style={
+                            styles.boxLogoMasuk
+                        }
                     >
                         <Image
                             source={{
-                                uri: 'https://i.ibb.co/LSdKgTH/Vector.png'
+                                uri: 'https://i.ibb.co/8Ddf831/kisspng-vector-graphics-royalty-free-pencil-cartoon-5c0ca74a56dd02-1.png'
                             }}
-                            style={styles.NamaLogo}
-                        />
-                        <TextInput
-                            placeholder="Nama Pengguna"
-                            onChangeText={(nama) => this.setState({ nama: nama })}
+                            style={styles.logoMasuk}
                         />
                     </View>
-                    <View
-                        style={styles.boxInput}
-                    >
-                        <Image
-                            source={{
-                                uri: 'https://i.ibb.co/FBfDZTG/EMAIL-LOGO-removebg-preview-2.png'
-                            }}
-                            style={styles.emailLogo}
-                        />
-                        <TextInput
-                            placeholder="Email ID"
-                            onChangeText={(email) => this.setState({ email: email })}
-                        />
-                    </View>
-                    <View
-                        style={styles.boxInput}
-                    >
-                        <Image
-                            source={{
-                                uri: 'https://i.ibb.co/ypZNWb5/247-2474005-png-file-svg-icon-login-password-clipart-1-1.png'
-                            }}
-                            style={styles.emailLogo}
-                        />
-                        <TextInput
-                            placeholder="Kata Sandi"
-                            onChangeText={(password) => this.setState({ password: password })}
-                        />
-                    </View>
-                    <View
-                        style={styles.boxInput}
-                    >
-                        <Image
-                            source={{
-                                uri: 'https://i.ibb.co/ypZNWb5/247-2474005-png-file-svg-icon-login-password-clipart-1-1.png'
-                            }}
-                            style={styles.emailLogo}
-                        />
-                        <TextInput
-                            placeholder="Konfirmasi Kata Sandi"
-                            onChangeText={(password) => this.setState({ password: password })}
-                        />
-                    </View>
-                </View>
+                    <Text
+                        style={styles.title}
+                    >KegiatanQ</Text>
 
-                <View style={styles.boxBtnMasuk}>
-                    <TouchableOpacity onPress={() => this.Daftar()}
-                        style={styles.btnMasuk}
+                    <View
+                        style={styles.mainContent}
                     >
-                        <Text style={styles.titleBtn} >Daftar</Text>
-                    </TouchableOpacity>
-                    <View style={styles.boxQuiz} >
-                        <Text style={{
-                            color: 'black',
-                            paddingRight: 10
-                        }} >Sudah memiliki akun ?</Text>
-                        <Text
-                            onPress={() => this.props.navigation.navigate("masuk")}
-                            style={{
-                                color: '#F55F44',
-                            }}
-                        >MASUK</Text>
+                        <View
+                            style={styles.boxInput}
+                        >
+                            <Image
+                                source={{
+                                    uri: 'https://i.ibb.co/LSdKgTH/Vector.png'
+                                }}
+                                style={styles.NamaLogo}
+                            />
+                            <TextInput
+                                placeholder="Nama Pengguna"
+                                onChangeText={(nama) => this.setState({ nama: nama })}
+                            />
+                        </View>
+                        <View
+                            style={styles.boxInput}
+                        >
+                            <Image
+                                source={{
+                                    uri: 'https://i.ibb.co/FBfDZTG/EMAIL-LOGO-removebg-preview-2.png'
+                                }}
+                                style={styles.emailLogo}
+                            />
+                            <TextInput
+                                placeholder="Email ID"
+                                onChangeText={(email) => this.setState({ email: email })}
+                            />
+                        </View>
+                        <View
+                            style={styles.boxInput}
+                        >
+                            <Image
+                                source={{
+                                    uri: 'https://i.ibb.co/ypZNWb5/247-2474005-png-file-svg-icon-login-password-clipart-1-1.png'
+                                }}
+                                style={styles.emailLogo}
+                            />
+                            <TextInput
+                                placeholder="Kata Sandi"
+                                onChangeText={(password) => this.setState({ password: password })}
+                            />
+                        </View>
+                        <View
+                            style={styles.boxInput}
+                        >
+                            <Image
+                                source={{
+                                    uri: 'https://i.ibb.co/ypZNWb5/247-2474005-png-file-svg-icon-login-password-clipart-1-1.png'
+                                }}
+                                style={styles.emailLogo}
+                            />
+                            <TextInput
+                                placeholder="Konfirmasi Kata Sandi"
+                                onChangeText={(password) => this.setState({ password: password })}
+                            />
+                        </View>
                     </View>
-                </View>
 
+                    <View style={styles.boxBtnMasuk}>
+
+                        {this.state.isLoading === true ?
+                            <ActivityIndicator size={"large"} color="red" />
+                            :
+                            <TouchableOpacity onPress={() => this.Daftar()}
+                                style={styles.btnMasuk}
+                            >
+                                <Text style={styles.titleBtn} >Daftar</Text>
+                            </TouchableOpacity>
+                        }
+
+                        <View style={styles.boxQuiz} >
+                            <Text style={{
+                                color: 'black',
+                                paddingRight: 10
+                            }} >Sudah memiliki akun ?</Text>
+                            <Text
+                                onPress={() => this.props.navigation.navigate("masuk")}
+                                style={{
+                                    color: '#F55F44',
+                                }}
+                            >MASUK</Text>
+                        </View>
+                    </View>
+                </ScrollView>
             </View>
         )
     }
